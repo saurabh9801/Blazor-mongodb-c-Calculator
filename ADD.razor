@@ -1,0 +1,106 @@
+﻿@page "/calculator"
+@using CalculatorClassLibrary
+@inject HttpClient Http;
+@inject IHttpClientFactory httpClientFactory
+
+<h1>Basic Calculator Demo Using Blazor</h1>
+
+<hr />
+@*<Form Model = @calculator OnValidSubmit="@SaveCalculator">*@
+<div>
+    <div class="row">
+        <div class="col-md-3">
+            <p>First Number</p>
+        </div>
+        <div class="col-md-4">
+            <input placeholder="Enter First Number" @bind="@CalculatorMessage.FirstNum" type="number" />
+                
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-3">
+            <p>Second Number</p>
+        </div>
+        <div class="col-md-4">
+            <input placeholder="Enter Second Number" @bind="@CalculatorMessage.SecondNum" type="number" />
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-3">
+            <p>Result</p>
+        </div>
+        <div class="col-md-4">
+            <input  @bind="@CalculatorMessage.Result" />
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-2">
+            <button @onclick="AddNumbers" class="btn btn-light">Add (+)</button>
+        </div>
+        <div class="col-md-2">
+            <button @onclick="SubtractNumbers" class="btn btn-primary">Subtract (−)</button>
+        </div>
+        <div class="col-md-2">
+            <button @onclick="MultiplyNumbers" class="btn btn-success ">Multiply (X)</button>
+        </div>
+        <div class="col-md-2">
+            <button @onclick="DivideNumbers" class="btn btn-info">Divide (/)</button>
+        </div>
+    </div>
+</div>
+
+@*</Form>*@
+@code {
+    string error;
+
+    public async void AddNumbers()
+    {
+        CalculatorMessage.Operator = "+";
+        await LoadResult();
+    }
+
+    public async void SubtractNumbers()
+    {
+        CalculatorMessage.Operator = "-";
+        await LoadResult();
+    }
+
+    public async void MultiplyNumbers()
+    {
+        CalculatorMessage.Operator = "*";
+        await LoadResult();
+    }
+
+    public async void DivideNumbers()
+    {
+        CalculatorMessage.Operator = "/";
+        await LoadResult();
+    }
+
+    protected async Task LoadResult()
+    {
+        error = string.Empty;
+        if (CalculatorMessage.SecondNum == 0 && CalculatorMessage.Operator == "divide")
+        {
+            error = "Num2 should be greater than 0";
+            CalculatorMessage.Result = 0;
+        }
+        else
+        {
+            //var result = await httpClientFactory.CreateClient("Anonymous").PostAsJsonAsync<CalculatorMessage>("api/Calculator/Create", CalculatorMessage);
+            var result = await httpClientFactory.CreateClient("Anonymous").PostAsJsonAsync<CalculatorMessage>("http://localhost:5289/api/Calculator/api/Calculator/Create", CalculatorMessage);
+
+            var strResponse = await result.Content.ReadAsStringAsync();
+            
+            //var CalculatorMessage1 = Newtonsoft.Json.JsonConvert.DeserializeObject<CalculatorMessage>(strResponse);
+            var CalculatorMessage1 = strResponse;
+            
+            CalculatorMessage.Result =Convert.ToDouble(CalculatorMessage1);
+        }
+        StateHasChanged();
+    
+}
+}
